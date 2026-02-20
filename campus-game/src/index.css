@@ -1,68 +1,165 @@
-:root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+@theme {
+  /* ── Primary Palette ── */
+  --color-primary: #6C5CE7;
+  --color-primary-light: #A29BFE;
+  --color-primary-dark: #4834D4;
 
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
+  /* ── Accent / Neon ── */
+  --color-accent: #00F5A0;
+  --color-accent-glow: #00D98B;
+  --color-accent-dim: rgba(0, 245, 160, 0.15);
+
+  /* ── Background Layers ── */
+  --color-bg-deep: #0A0E1A;
+  --color-bg-base: #0F1629;
+  --color-bg-surface: #161D35;
+  --color-bg-card: #1C2541;
+  --color-bg-elevated: #243054;
+
+  /* ── Text ── */
+  --color-text-primary: #F0F1F5;
+  --color-text-secondary: #8B95B0;
+  --color-text-muted: #4F5B78;
+
+  /* ── Status Colors ── */
+  --color-success: #00F5A0;
+  --color-warning: #FBBF24;
+  --color-danger: #FF6B6B;
+  --color-info: #60A5FA;
+
+  /* ── Gradient Stops ── */
+  --color-grad-start: #6C5CE7;
+  --color-grad-end: #00F5A0;
+
+  /* ── Shadows & Glows ── */
+  --shadow-glow-accent: 0 0 20px rgba(0, 245, 160, 0.25);
+  --shadow-glow-primary: 0 0 20px rgba(108, 92, 231, 0.3);
+  --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.35);
+  --shadow-nav: 0 -4px 30px rgba(0, 0, 0, 0.5);
+
+  /* ── Border ── */
+  --color-border: rgba(255, 255, 255, 0.06);
+  --color-border-active: rgba(108, 92, 231, 0.5);
+
+  /* ── Radius ── */
+  --radius-card: 1.25rem;
+  --radius-pill: 9999px;
+  --radius-nav: 1.75rem;
+}
+
+/* ── Base Reset & Defaults ── */
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-family: 'Outfit', system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-}
-
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
+  scroll-behavior: smooth;
 }
 
 body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
+  background: var(--color-bg-deep);
+  color: var(--color-text-primary);
+  min-height: 100dvh;
+  overflow-x: hidden;
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+/* ── Scrollbar Styling ── */
+::-webkit-scrollbar {
+  width: 6px;
 }
 
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+::-webkit-scrollbar-track {
+  background: var(--color-bg-base);
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
+::-webkit-scrollbar-thumb {
+  background: var(--color-bg-elevated);
+  border-radius: var(--radius-pill);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-primary);
+}
+
+/* ── Utility Classes ── */
+.gradient-text {
+  background: linear-gradient(135deg, var(--color-primary-light), var(--color-accent));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.glass-card {
+  background: rgba(28, 37, 65, 0.65);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+}
+
+.glow-accent {
+  box-shadow: var(--shadow-glow-accent);
+}
+
+.glow-primary {
+  box-shadow: var(--shadow-glow-primary);
+}
+
+/* ── Animations ── */
+@keyframes float {
+
+  0%,
+  100% {
+    transform: translateY(0px);
   }
-  a:hover {
-    color: #747bff;
+
+  50% {
+    transform: translateY(-6px);
   }
-  button {
-    background-color: #f9f9f9;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% center;
   }
+
+  100% {
+    background-position: 200% center;
+  }
+}
+
+@keyframes pulse-glow {
+
+  0%,
+  100% {
+    box-shadow: 0 0 8px rgba(0, 245, 160, 0.2);
+  }
+
+  50% {
+    box-shadow: 0 0 24px rgba(0, 245, 160, 0.45);
+  }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-shimmer {
+  background-size: 200% auto;
+  animation: shimmer 3s linear infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
 }
