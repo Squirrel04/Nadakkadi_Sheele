@@ -21,7 +21,7 @@ export default function BottomNav() {
             className="fixed bottom-0 left-0 right-0 z-50 flex justify-center pb-4 px-4 pointer-events-none"
         >
             <div
-                className="pointer-events-auto w-full max-w-md flex items-center justify-around
+                className="pointer-events-auto w-full flex items-center justify-around
                     py-3 px-4 rounded-[var(--radius-nav)]
                     bg-[var(--color-bg-surface)]/80 backdrop-blur-xl
                     border border-[var(--color-border)]
@@ -52,16 +52,16 @@ export default function BottomNav() {
 
                             <Icon
                                 className={`relative z-10 transition-all duration-200 ${isActive
-                                        ? "w-6 h-6 text-[var(--color-accent)] drop-shadow-[0_0_8px_rgba(0,245,160,0.5)]"
-                                        : "w-5 h-5 text-[var(--color-text-muted)]"
+                                    ? "w-6 h-6 text-[var(--color-accent)] drop-shadow-[0_0_8px_rgba(0,245,160,0.5)]"
+                                    : "w-5 h-5 text-[var(--color-text-muted)]"
                                     }`}
                                 strokeWidth={isActive ? 2.5 : 2}
                             />
 
                             <span
                                 className={`relative z-10 text-[10px] font-medium transition-all duration-200 ${isActive
-                                        ? "text-[var(--color-accent)]"
-                                        : "text-[var(--color-text-muted)]"
+                                    ? "text-[var(--color-accent)]"
+                                    : "text-[var(--color-text-muted)]"
                                     }`}
                             >
                                 {item.label}

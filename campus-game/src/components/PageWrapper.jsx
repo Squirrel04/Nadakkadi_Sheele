@@ -14,7 +14,7 @@ export default function PageWrapper({ children, className = "" }) {
             animate="animate"
             exit="exit"
             transition={{ duration: 0.3, ease: "easeOut" }}
-            className={`min-h-dvh pb-28 px-4 pt-6 max-w-md mx-auto ${className}`}
+            className={`min-h-dvh pb-28 px-4 pt-6 mx-auto ${className}`}
         >
             {children}
         </motion.main>

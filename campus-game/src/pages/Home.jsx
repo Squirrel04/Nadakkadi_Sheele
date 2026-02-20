@@ -24,13 +24,13 @@ export default function Home() {
                 {/* Header */}
                 <motion.div variants={itemVariants} className="mb-8">
                     <p className="text-[var(--color-text-secondary)] text-sm font-medium">Welcome back 👋</p>
-                    <h1 className="text-3xl font-bold mt-1">
+                    <h1 className="text-6xl font-bold mt-1">
                         <span className="gradient-text">Nadakkadi Sheele</span>
                     </h1>
                 </motion.div>
 
                 {/* Quick Stats */}
-                <motion.div variants={itemVariants} className="grid grid-cols-3 gap-3 mb-8">
+                <motion.div variants={itemVariants} className="grid grid-cols-3 gap-3 mb-10">
                     {quickStats.map((stat) => {
                         const Icon = stat.icon;
                         return (
@@ -45,39 +45,18 @@ export default function Home() {
                     })}
                 </motion.div>
 
-                {/* Today's Highlight Card */}
-                <motion.div
-                    variants={itemVariants}
-                    className="glass-card p-6 mb-6 relative overflow-hidden"
-                >
-                    <div className="absolute -top-10 -right-10 w-32 h-32 bg-[var(--color-primary)]/10 rounded-full blur-2xl" />
-                    <div className="absolute -bottom-8 -left-8 w-24 h-24 bg-[var(--color-accent)]/10 rounded-full blur-2xl" />
-
-                    <div className="relative z-10">
-                        <div className="flex items-center gap-2 mb-3">
-                            <Activity className="w-5 h-5 text-[var(--color-accent)]" />
-                            <span className="text-xs font-semibold uppercase tracking-widest text-[var(--color-accent)]">
-                                Today's Goal
-                            </span>
-                        </div>
-                        <h2 className="text-xl font-bold text-[var(--color-text-primary)] mb-1">
-                            Walk 5,000 steps
-                        </h2>
-                        <p className="text-sm text-[var(--color-text-secondary)] mb-4">
-                            Complete your daily step goal to earn bonus XP and maintain your streak!
-                        </p>
-
-                        {/* Progress Bar */}
-                        <div className="w-full h-2.5 bg-[var(--color-bg-deep)] rounded-full overflow-hidden">
-                            <motion.div
-                                initial={{ width: 0 }}
-                                animate={{ width: "68%" }}
-                                transition={{ duration: 1.2, ease: "easeOut", delay: 0.5 }}
-                                className="h-full rounded-full bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-accent)]"
-                            />
-                        </div>
-                        <p className="text-xs text-[var(--color-text-muted)] mt-2">3,400 / 5,000 steps</p>
+                {/* Progress Bar Container */}
+                <motion.div variants={itemVariants} className="glass-card p-6 mb-6 flex flex-col justify-center">
+                    <h2 className="text-xl font-bold text-[var(--color-text-primary)] mb-4">Walk 5,000 steps</h2>
+                    <div className="w-full h-2.5 bg-[var(--color-bg-deep)] rounded-full overflow-hidden">
+                        <motion.div
+                            initial={{ width: 0 }}
+                            animate={{ width: "68%" }}
+                            transition={{ duration: 1.2, ease: "easeOut", delay: 0.5 }}
+                            className="h-full rounded-full bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-accent)]"
+                        />
                     </div>
+                    <p className="text-xs text-[var(--color-text-muted)] mt-2">3,400 / 5,000 steps</p>
                 </motion.div>
 
                 {/* Recent Activity Placeholder */}
@@ -105,7 +84,7 @@ export default function Home() {
                         )
                     )}
                 </motion.div>
-            </motion.div>
-        </PageWrapper>
+            </motion.div >
+        </PageWrapper >
     );
 }
