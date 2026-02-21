@@ -19,13 +19,22 @@ export default function GameMode() {
     const { isAuthenticated, user } = useAuth();
     const [score, setScore] = useState(0);
     const [rows, setRows] = useState(generateInitialRows);
+    const rowsRef = useRef(rows);
+    useEffect(() => {
+        rowsRef.current = rows;
+    }, [rows]);
     const [tilesHit, setTilesHit] = useState(0);
     const [tilesMissed, setTilesMissed] = useState(0);
     const [gameActive, setGameActive] = useState(true);
     const [showEndScreen, setShowEndScreen] = useState(false);
     const [sessionRewards, setSessionRewards] = useState(null);
     const [levelUp, setLevelUp] = useState(false);
-    
+    const [popups, setPopups] = useState([]);
+
+    // Debug & motion states
+    const [motionActive, setMotionActive] = useState(false);
+    const [debugMag, setDebugMag] = useState("0.0");
+
     const idCounter = useRef(100);
     const sessionIdRef = useRef(null);
     const startTimeRef = useRef(Date.now());
@@ -54,14 +63,107 @@ export default function GameMode() {
         };
     }, [isAuthenticated]);
 
-    const handleTileClick = (rowIndex, colIndex, isTarget) => {
+    const lastShakeRef = useRef(Date.now());
+
+    // Listen to device motion for physical steps (Option 1)
+    const handleMotion = (event) => {
+        if (!gameActive) return;
+
+        const acc = event.accelerationIncludingGravity || event.acceleration;
+        if (!acc || acc.x === null) {
+            setDebugMag("No acc data");
+            return;
+        }
+
+        // Calculate total acceleration magnitude
+        const magnitude = Math.sqrt((acc.x * acc.x) + (acc.y * acc.y) + (acc.z * acc.z));
+        setDebugMag(magnitude.toFixed(1));
+
+        const isGs = magnitude < 2 && magnitude > 0.5;
+        const threshold = isGs ? 1.8 : 13;
+
+        if (magnitude > threshold) {
+            const now = Date.now();
+            if (now - lastShakeRef.current > 300) {
+                lastShakeRef.current = now;
+                triggerPhysicalStep();
+            }
+        }
+    };
+
+    const activateMotion = async () => {
+        if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
+            try {
+                const permission = await DeviceMotionEvent.requestPermission();
+                if (permission === 'granted') {
+                    window.addEventListener('devicemotion', handleMotion);
+                    setMotionActive(true);
+                    setDebugMag("iOS Acc Allowed");
+                } else {
+                    setDebugMag("iOS Acc Denied");
+                }
+            } catch (e) {
+                setDebugMag("iOS Acc Error. Need HTTPS");
+            }
+        } else {
+            window.addEventListener('devicemotion', handleMotion);
+            setMotionActive(true);
+            setDebugMag("Android Acc Active");
+        }
+    };
+
+    useEffect(() => {
+        return () => window.removeEventListener('devicemotion', handleMotion);
+    }, []);
+
+    const triggerPhysicalStep = () => {
+        const bottomRow = rowsRef.current[0];
+        if (!bottomRow) return;
+
+        const activeCol = bottomRow.activeCol;
+
+        // Mock a center screen click pixel event
+        const screenCenter = {
+            clientX: window.innerWidth / 2,
+            clientY: window.innerHeight - 150,
+            isMock: true
+        };
+
+        handleTileClick(screenCenter, 0, activeCol, true);
+    };
+
+    const handleTileClick = (e, rowIndex, colIndex, isTarget) => {
         if (rowIndex !== 0 || !gameActive) return;
+
+        let clientX = e.clientX;
+        let clientY = e.clientY;
+
+        if (!e.isMock && e.currentTarget) {
+            const rect = e.currentTarget.getBoundingClientRect();
+            clientX = e.clientX || (e.touches && e.touches[0].clientX) || rect.left + rect.width / 2;
+            clientY = e.clientY || (e.touches && e.touches[0].clientY) || rect.top;
+        }
+
+        const addPopup = (text, isPositive) => {
+            const newPopup = {
+                id: Date.now() + Math.random(),
+                text,
+                x: clientX,
+                y: clientY,
+                isPositive
+            };
+            setPopups(prev => [...prev, newPopup]);
+            setTimeout(() => {
+                setPopups(prev => prev.filter(p => p.id !== newPopup.id));
+            }, 1000);
+        };
 
         if (isTarget) {
             // Correct step!
             setScore(s => s + 10);
             setTilesHit(t => t + 1);
             missedInRowRef.current = 0;
+            addPopup("+10", true);
 
             // Advance the board down
             setRows(curr => {
@@ -78,17 +180,12 @@ export default function GameMode() {
                 navigator.vibrate(40);
             }
         } else {
-            // Wrong step
+            // Wrong step - no score penalty
             setTilesMissed(m => m + 1);
-            missedInRowRef.current += 1;
+            addPopup("Miss!", false);
 
             if (typeof navigator.vibrate === 'function') {
                 navigator.vibrate([100, 50, 100]);
-            }
-
-            // Game over after 3 consecutive misses
-            if (missedInRowRef.current >= 3) {
-                endGameSession();
             }
         }
     };
@@ -260,6 +357,24 @@ export default function GameMode() {
                 <div className="absolute inset-0 bg-[linear-gradient(rgba(255,0,255,0.15)_1px,transparent_1px),linear-gradient(90deg,rgba(255,0,255,0.15)_1px,transparent_1px)] bg-[size:40px_40px] [transform:rotateX(60deg)_translateY(-100px)_translateZ(-200px)] opacity-40 animate-[gridMove_4s_linear_infinite]" />
             </div>
 
+            {/* Floating Popups */}
+            <AnimatePresence>
+                {popups.map(popup => (
+                    <motion.div
+                        key={popup.id}
+                        initial={{ opacity: 1, y: 0, scale: 0.5 }}
+                        animate={{ opacity: 0, y: -100, scale: 1.5 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.8, ease: "easeOut" }}
+                        className={`absolute font-black pointer-events-none z-[100] text-3xl drop-shadow-[0_0_10px_rgba(0,0,0,0.8)]
+                            ${popup.isPositive ? 'text-green-400 drop-shadow-[0_0_8px_rgba(74,222,128,0.8)]' : 'text-red-500 drop-shadow-[0_0_8px_rgba(239,68,68,0.8)]'}`}
+                        style={{ left: popup.x - 20, top: popup.y - 40 }}
+                    >
+                        {popup.text}
+                    </motion.div>
+                ))}
+            </AnimatePresence>
+
             {/* Game Lane Container */}
             <div className="flex-1 relative w-full max-w-sm mx-auto flex flex-col-reverse px-2 pb-8 pt-32 overflow-hidden z-10 touch-none">
                 {/* 4 Lanes Background Dividers */}
@@ -288,21 +403,21 @@ export default function GameMode() {
                                     return (
                                         <div
                                             key={col}
-                                            className="flex-1 p-[4px] relative flex items-center justify-center cursor-pointer"
+                                            className="flex-1 p-0 relative flex items-center justify-center cursor-pointer"
                                             onPointerDown={(e) => {
                                                 e.preventDefault();
-                                                handleTileClick(index, col, isTarget);
+                                                handleTileClick(e, index, col, isTarget);
                                             }}
                                         >
                                             {isTarget && (
                                                 <motion.div
                                                     whileTap={isBottom ? { scale: 0.85 } : {}}
-                                                    className={`w-full h-full rounded-xl transition-all relative overflow-hidden
+                                                    className={`w-[130%] h-full rounded-[16px] transition-all relative overflow-hidden z-20
                                                         ${isBottom
-                                                            ? 'bg-gradient-to-b from-pink-400 to-pink-600 border-2 border-pink-300 shadow-[0_0_20px_rgba(236,72,153,0.8)]'
-                                                            : 'bg-gradient-to-b from-purple-500/50 to-pink-600/50 border border-pink-400/30 opacity-80'}`}
+                                                            ? 'bg-gradient-to-b from-pink-400 to-pink-600 border-[3px] border-pink-300 shadow-[0_0_35px_rgba(236,72,153,1)] scale-105'
+                                                            : 'bg-gradient-to-b from-purple-500/60 to-pink-600/60 border border-pink-400/40 opacity-100'}`}
                                                 >
-                                                    <div className="absolute inset-x-2 top-2 h-2 rounded-full bg-white/20" />
+                                                    <div className="absolute inset-x-3 top-2 h-2 rounded-full bg-white/30 blur-[1px]" />
                                                 </motion.div>
                                             )}
                                         </div>
@@ -317,6 +432,22 @@ export default function GameMode() {
             {/* Target Line Area overlay */}
             <div className="absolute bottom-6 left-0 right-0 h-24 bg-gradient-to-t from-pink-500/20 to-transparent border-t-2 border-pink-500/50 shadow-[0_-10px_30px_rgba(236,72,153,0.2)] pointer-events-none z-20">
                 <div className="w-full text-center mt-2 text-pink-400/80 font-bold tracking-widest text-xs">FORWARD STEP</div>
+
+                {/* Motion Debugger Box & Activator */}
+                <div className="absolute top-10 left-0 right-0 flex flex-col items-center pointer-events-auto">
+                    {!motionActive ? (
+                        <button
+                            onClick={activateMotion}
+                            className="bg-purple-600 border-2 border-purple-400 text-white px-4 py-2 rounded-full text-xs font-bold animate-pulse shadow-[0_0_15px_rgba(168,85,247,0.8)]"
+                        >
+                            ENABLE MOTION CONTROLS
+                        </button>
+                    ) : (
+                        <div className="bg-black/50 border border-white/20 px-3 py-1 rounded text-[10px] text-white/50 backdrop-blur-md">
+                            Motion Active | Mag: {debugMag}
+                        </div>
+                    )}
+                </div>
             </div>
 
             <style jsx>{`

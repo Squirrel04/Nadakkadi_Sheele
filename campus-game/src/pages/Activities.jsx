@@ -14,18 +14,12 @@ const itemVariants = {
     animate: { opacity: 1, y: 0 },
 };
 
-const difficultyLevels = [
-    { name: "Easy", difficulty: "easy", description: "Best for beginners", color: "from-green-500 to-green-600" },
-    { name: "Normal", difficulty: "normal", description: "Standard gameplay", color: "from-blue-500 to-blue-600" },
-    { name: "Hard", difficulty: "hard", description: "Challenge yourself", color: "from-purple-500 to-purple-600" },
-    { name: "Insane", difficulty: "insane", description: "For the pros", color: "from-red-500 to-red-600" },
-];
+
 
 export default function Activities() {
     const navigate = useNavigate();
     const { user } = useAuth();
     const [gameHistory, setGameHistory] = useState([]);
-    const [selectedDifficulty, setSelectedDifficulty] = useState('normal');
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -45,7 +39,7 @@ export default function Activities() {
 
     const handleStartGame = async () => {
         try {
-            await apiService.startGame(selectedDifficulty);
+            await apiService.startGame('normal');
             navigate('/play');
         } catch (error) {
             console.error('Failed to start game:', error);
@@ -62,27 +56,7 @@ export default function Activities() {
                     Play games to earn XP and climb the leaderboard
                 </motion.p>
 
-                {/* DIFFICULTY SELECTOR */}
-                <motion.div variants={itemVariants} className="mb-8">
-                    <h3 className="text-sm font-semibold text-[var(--color-text-secondary)] mb-3 uppercase tracking-widest">
-                        Select Difficulty
-                    </h3>
-                    <div className="grid grid-cols-2 gap-2">
-                        {difficultyLevels.map((level) => (
-                            <button
-                                key={level.difficulty}
-                                onClick={() => setSelectedDifficulty(level.difficulty)}
-                                className={`p-3 rounded-lg transition-all ${selectedDifficulty === level.difficulty
-                                        ? `bg-gradient-to-br ${level.color} text-white border-2 border-white/50 scale-105`
-                                        : 'glass-card border border-[var(--color-border)] text-[var(--color-text-primary)] hover:border-[var(--color-border-active)]'
-                                    }`}
-                            >
-                                <p className="font-bold text-sm">{level.name}</p>
-                                <p className="text-xs text-opacity-80 mt-0.5 opacity-80">{level.description}</p>
-                            </button>
-                        ))}
-                    </div>
-                </motion.div>
+
 
                 {/* START LIVE GAME CTA */}
                 <motion.button
@@ -108,23 +82,12 @@ export default function Activities() {
                             Start Game
                         </h2>
                         <p className="text-xs text-pink-300/80 mt-1 font-medium relative z-10 uppercase tracking-widest text-center">
-                            Jump on the pink tiles - {selectedDifficulty} mode
+                            Activate motion to start stepping!
                         </p>
                     </div>
                 </motion.button>
 
-                {/* GAME MODES INFO */}
-                <motion.div variants={itemVariants} className="mb-8 glass-card p-4">
-                    <div className="flex items-start gap-3">
-                        <Gamepad2 className="w-5 h-5 text-[var(--color-accent)] shrink-0 mt-0.5" />
-                        <div>
-                            <p className="font-semibold text-[var(--color-text-primary)] text-sm">How to Play</p>
-                            <p className="text-xs text-[var(--color-text-secondary)] mt-1">
-                                Tap the pink tiles as they fall. Miss 3 times and the game ends. Earn XP based on your score and accuracy!
-                            </p>
-                        </div>
-                    </div>
-                </motion.div>
+
 
                 {/* RECENT GAMES */}
                 <motion.div variants={itemVariants}>

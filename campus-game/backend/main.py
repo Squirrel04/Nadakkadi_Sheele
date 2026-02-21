@@ -483,12 +483,12 @@ if __name__ == '__main__':
                 username='guest_user',
                 email='guest@example.com',
                 full_name='Guest Player',
-                total_xp=15420,
-                level=12
+                total_xp=0,
+                level=1
             )
             default_user.set_password('password123')
             db.session.add(default_user)
             db.session.commit()
             print("Initialized default test user (ID: 1)")
     
-    app.run(debug=True, port=5000)
+    app.run(host='0.0.0.0', port=5000, debug=True)

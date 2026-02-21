@@ -1,4 +1,5 @@
-import React, { createContext, useState, useContext } from 'react';
+import React, { createContext, useState, useContext, useEffect } from 'react';
+import apiService from '../services/apiService';
 
 const AuthContext = createContext();
 
@@ -11,19 +12,31 @@ export const useAuth = () => {
 };
 
 export const AuthProvider = ({ children }) => {
-  // Mock a user to bypass login entirely
-  const [user, setUser] = useState({
-    id: 1,
-    username: 'guest_user',
-    email: 'guest@example.com',
-    fullName: 'Guest Player',
-    totalScore: 15420,
-    level: 12
-  });
+  const [user, setUser] = useState(null);
   const [token, setToken] = useState('mock-token');
+  const [loading, setLoading] = useState(true);
 
-  // No loading state needed since we have mock data instantly
-  const loading = false;
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const data = await apiService.getProfile();
+        setUser({
+          id: data.user.id,
+          username: data.user.username,
+          email: data.user.email,
+          fullName: data.user.full_name,
+          totalScore: data.user.total_xp,
+          level: data.user.level
+        });
+      } catch (error) {
+        console.error('Error fetching mock profile:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProfile();
+  }, []);
 
   const register = async () => {
     return { user, access_token: token };
